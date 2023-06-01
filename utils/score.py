@@ -1,25 +1,25 @@
 import os
 import requests
 
+# firebase
+from firebase_admin import storage
+
+# model libs
 import torch
 import nemo.collections.asr as nemo_asr
 
 model = nemo_asr.models.EncDecSpeakerLabelModel.from_pretrained(
     "nvidia/speakerverification_en_titanet_large"
 )
+bucket = storage.bucket()
 
 
 def process_and_score(url1, url2):
-    req1 = requests.get(url1)
-    req2 = requests.get(url2)
     AUDIO1 = "tmp/audio1.wav"
     AUDIO2 = "tmp/audio2.wav"
 
-    with open(AUDIO1, "wb") as file:
-        file.write(req1.content)
-
-    with open(AUDIO2, "wb") as file:
-        file.write(req2.content)
+    bucket.child(url1).put(AUDIO1)
+    bucket.child(url2).put(AUDIO2)
 
     score = get_score(AUDIO1, AUDIO2)
     os.remove(AUDIO1)
