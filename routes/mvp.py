@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+import torch
 
 from firebase_admin import firestore
 
@@ -40,11 +41,12 @@ def update_test():
         return jsonify(code=400, message="Missing id or data in request body.")
     id = request.json["id"]
     data = request.json["data"]
-    # create or replace
     try:
         if request.method == "PUT":
+            # create or replace - PUT
             collection.document(id).set(data)
         else:
+            # update - POST
             collection.document(id).set(data, merge=True)
     except Exception as e:
         return jsonify(
