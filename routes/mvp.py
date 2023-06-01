@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, request, jsonify
 
 from firebase_admin import firestore
 
@@ -8,6 +8,7 @@ from utils.firebase import init_firebase
 mvp = Blueprint("mvp", __name__)
 
 db = init_firebase()
+collection = db.collection("test")
 
 
 @mvp.route("/test", methods=["GET"])
@@ -17,8 +18,6 @@ def test_route():
 
 @mvp.route("/test/<id>", methods=["GET"])
 def get_test(id):
-    collection = db.collection("test")
-
     try:
         data = collection.document(id).get()
 
@@ -35,5 +34,23 @@ def get_test(id):
         )
 
 
-# @mvp.route("test")
-# def put_test
+@mvp.route("/test", methods=["PUT", "POST"])
+def update_test():
+    if "id" not in request.json or "data" not in request.json:
+        return jsonify(code=400, message="Missing id or data in request body.")
+    id = request.json["id"]
+    data = request.json["data"]
+    # create or replace
+    try:
+        if request.method == "PUT":
+            collection.document(id).set(data)
+        else:
+            collection.document(id).set(data, merge=True)
+    except Exception as e:
+        return jsonify(
+            code=500,
+            message="Error caught",
+            error=str(e),
+        )
+
+    return jsonify(code=201, message="Data created successfully!")
