@@ -18,22 +18,21 @@ init_firebase()
 bucket = storage.bucket(name="deeptruth-fb46f.appspot.com")
 
 
-def process_and_score(url1, url2):
+def process_and_score(blob_path1, blob_path2):
     AUDIO1 = "tmp/audio1.wav"
     AUDIO2 = "tmp/audio2.wav"
 
     if not os.path.exists("tmp"):
         os.makedirs("tmp")
 
-    _download_blob(url1, AUDIO1)
-    _download_blob(url2, AUDIO2)
+    _download_blob(blob_path1, AUDIO1)
+    _download_blob(blob_path2, AUDIO2)
 
     score = get_score(AUDIO1, AUDIO2)
     os.remove(AUDIO1)
     os.remove(AUDIO2)
     os.removedirs("tmp")
 
-    print(f"score TEST {score}")
     return score
 
 

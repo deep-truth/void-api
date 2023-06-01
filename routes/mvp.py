@@ -15,17 +15,17 @@ users = db.collection("users")
 
 
 @mvp.route("/label/add", methods=["PUT", "POST"])
-def add_urls_to_label():
-    urls = request.json.get("urls")
+def add_blob_paths_to_label():
+    blob_paths = request.json.get("blob_paths")
     label = request.json.get("label")
 
-    if not (urls and label):
-        return jsonify(status=400, message="Missing urls or label in request body.")
+    if not (blob_paths and label):
+        return jsonify(status=400, message="Missing blob_paths or label in request body.")
 
-    # if isinstance(urls, list):
-    #     return jsonify(status=400, message="urls is expected to be a list.")
+    # if isinstance(blob_paths, list):
+    #     return jsonify(status=400, message="blob_paths is expected to be a list.")
 
-    data = dict(urls=urls)
+    data = dict(blob_paths=blob_paths)
     try:
         if request.method == "PUT":
             # create or replace - PUT
@@ -34,9 +34,9 @@ def add_urls_to_label():
             # update - POST
             doc_ref = users.document(label).get()
             if doc_ref.exists:
-                current_urls = doc_ref.get("urls")
-                combined_urls = list(set(current_urls).union(set(urls)))
-                data = dict(urls=combined_urls)
+                current_blob_paths = doc_ref.get("blob_paths")
+                combined_blob_paths = list(set(current_blob_paths).union(set(blob_paths)))
+                data = dict(blob_paths=combined_blob_paths)
             users.document(label).set(data, merge=True)
     except Exception as e:
         return jsonify(
@@ -50,10 +50,10 @@ def add_urls_to_label():
 
 @mvp.route("/score", methods=["GET"])
 def score():
-    url = request.args.get("url")
+    blob_path = request.args.get("blob_path")
     label = request.args.get("label")
 
-    if not url or not label:
+    if not blob_path or not label:
         return jsonify(status=400, message="Missing url or label in request body.")
 
     doc_ref = users.document(label).get()
@@ -62,14 +62,14 @@ def score():
             status=404, message='There are no labels "{}" in our records.'.format(label)
         )
 
-    label_urls = doc_ref.get("urls")
+    label_blob_paths = doc_ref.get("blob_paths")
     score = 0
-    for label_url in label_urls:
-        new_score = process_and_score(url, label_url)
+    for label_url in label_blob_paths:
+        new_score = process_and_score(blob_path, label_url)
         print(f"new score {new_score}")
         score += new_score
 
-    score = score / len(label_urls)
+    score = score / len(label_blob_paths)
     score = round(float(score), 4)
 
     return jsonify(status=200, data=dict(score=score))
