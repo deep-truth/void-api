@@ -8,10 +8,14 @@ from firebase_admin import storage
 import torch
 import nemo.collections.asr as nemo_asr
 
+# utls
+from utils.firebase import init_firebase
+
 model = nemo_asr.models.EncDecSpeakerLabelModel.from_pretrained(
     "nvidia/speakerverification_en_titanet_large"
 )
-bucket = storage.bucket()
+init_firebase()
+bucket = storage.bucket(name="deeptruth-fb46")
 
 
 def process_and_score(url1, url2):
