@@ -18,13 +18,12 @@ users = db.collection("users")
 def add_urls_to_label():
     urls = request.json.get("urls")
     label = request.json.get("label")
-    print(f"urls {urls[0]}, label {label}")
 
     if not (urls and label):
-        return jsonify(code=400, message="Missing urls or label in request body.")
+        return jsonify(status=400, message="Missing urls or label in request body.")
 
     # if isinstance(urls, list):
-    #     return jsonify(code=400, message="urls is expected to be a list.")
+    #     return jsonify(status=400, message="urls is expected to be a list.")
 
     data = dict(urls=urls)
     try:
@@ -41,12 +40,12 @@ def add_urls_to_label():
             users.document(label).set(data, merge=True)
     except Exception as e:
         return jsonify(
-            code=500,
+            status=500,
             message="Error caught",
             error=str(e),
         )
 
-    return jsonify(code=201, message="Data created successfully!")
+    return jsonify(status=201, message="Data created successfully!")
 
 
 @mvp.route("/score", methods=["GET"])
@@ -55,11 +54,25 @@ def score():
     label = request.args.get("label")
 
     if not url or not label:
-        return jsonify(code=400, message="Missing url or label in request body.")
+        return jsonify(status=400, message="Missing url or label in request body.")
 
-    test_url = "gs://deeptruth-fb46f.appspot.com/aman_1.wav"
+    doc_ref = users.document(label).get()
+    if not doc_ref.exists:
+        return jsonify(
+            status=404, message='There are no labels "{}" in our records.'.format(label)
+        )
 
-    return jsonify(code=200, data=process_and_score(url, test_url))
+    label_urls = doc_ref.get("urls")
+    score = 0
+    for label_url in label_urls:
+        new_score = process_and_score(url, label_url)
+        print(f"new score {new_score}")
+        score += new_score
+
+    score = score / len(label_urls)
+    score = round(float(score), 4)
+
+    return jsonify(status=200, data=dict(score=score))
 
 
 """
@@ -79,13 +92,13 @@ def get_test(id):
         data = test_collection.document(id).get()
 
         return jsonify(
-            code=200,
+            status=200,
             message="Data grabbed!",
             data=data.to_dict(),
         )
     except Exception as e:
         return jsonify(
-            code=500,
+            status=500,
             message="Error caught",
             error=str(e),
         )
@@ -94,7 +107,7 @@ def get_test(id):
 @mvp.route("/test", methods=["PUT", "POST"])
 def update_test():
     if "id" not in request.json or "data" not in request.json:
-        return jsonify(code=400, message="Missing id or data in request body.")
+        return jsonify(status=400, message="Missing id or data in request body.")
     id = request.json["id"]
     data = request.json["data"]
     try:
@@ -106,9 +119,9 @@ def update_test():
             test_collection.document(id).set(data, merge=True)
     except Exception as e:
         return jsonify(
-            code=500,
+            status=500,
             message="Error caught",
             error=str(e),
         )
 
-    return jsonify(code=201, message="Data created successfully!")
+    return jsonify(status=201, message="Data created successfully!")

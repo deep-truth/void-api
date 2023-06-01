@@ -15,21 +15,31 @@ model = nemo_asr.models.EncDecSpeakerLabelModel.from_pretrained(
     "nvidia/speakerverification_en_titanet_large"
 )
 init_firebase()
-bucket = storage.bucket(name="deeptruth-fb46")
+bucket = storage.bucket(name="deeptruth-fb46f.appspot.com")
 
 
 def process_and_score(url1, url2):
     AUDIO1 = "tmp/audio1.wav"
     AUDIO2 = "tmp/audio2.wav"
 
-    bucket.child(url1).put(AUDIO1)
-    bucket.child(url2).put(AUDIO2)
+    if not os.path.exists("tmp"):
+        os.makedirs("tmp")
+
+    _download_blob(url1, AUDIO1)
+    _download_blob(url2, AUDIO2)
 
     score = get_score(AUDIO1, AUDIO2)
     os.remove(AUDIO1)
     os.remove(AUDIO2)
+    os.removedirs("tmp")
 
+    print(f"score TEST {score}")
     return score
+
+
+def _download_blob(source, dest):
+    blob = bucket.blob(source)
+    blob.download_to_filename(dest)
 
 
 def get_score(audio_file1, audio_file2, use_dot_score=False):
