@@ -5,3 +5,10 @@ channels:
 dependencies:
   - python=3.10
   - flask
+  - torchvision
+  - torchaudio
+  - pytorch::pytorch
+  - numba
+pip:
+  - cython
+  - git+https://github.com/NVIDIA/NeMo.git
