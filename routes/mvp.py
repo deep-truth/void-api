@@ -13,23 +13,26 @@ db = init_firebase()
 
 users = db.collection("users")
 
-
+# PUT /mvp/label/add -- Add new label or replace existing 
+# POST /mvp/label/add -- Update existing labels
 @mvp.route("/label/add", methods=["PUT", "POST"])
 def add_blob_paths_to_label():
     blob_paths = request.json.get("blob_paths")
     label = request.json.get("label")
+    admin = request.json.get("admin")
 
-    if not (blob_paths and label):
-        return jsonify(status=400, message="Missing blob_paths or label in request body.")
+    if not (blob_paths and label and admin):
+        return jsonify(status=400, message="Missing admin, blob_paths, or label in request body.")
 
     # if isinstance(blob_paths, list):
     #     return jsonify(status=400, message="blob_paths is expected to be a list.")
 
     data = dict(blob_paths=blob_paths)
+    labels_doc = users.document(admin).collection("labels")
     try:
         if request.method == "PUT":
             # create or replace - PUT
-            users.document(label).set(data)
+            labels_doc.document(label).set(data)
         else:
             # update - POST
             doc_ref = users.document(label).get()
@@ -37,7 +40,7 @@ def add_blob_paths_to_label():
                 current_blob_paths = doc_ref.get("blob_paths")
                 combined_blob_paths = list(set(current_blob_paths).union(set(blob_paths)))
                 data = dict(blob_paths=combined_blob_paths)
-            users.document(label).set(data, merge=True)
+            labels_doc.document(label).set(data, merge=True)
     except Exception as e:
         return jsonify(
             status=500,
