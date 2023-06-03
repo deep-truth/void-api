@@ -11,7 +11,7 @@ mvp = Blueprint("mvp", __name__)
 
 db = init_firebase()
 
-users = db.collection("users")
+admins = db.collection("admins")
 
 # PUT /mvp/label/add -- Add new label or replace existing 
 # POST /mvp/label/add -- Update existing labels
@@ -32,14 +32,14 @@ def add_blob_paths_to_label():
     #     return jsonify(status=400, message="blob_paths is expected to be a list.")
 
     data = dict(blob_paths=blob_paths)
-    labels_doc = users.document(admin).collection("labels")
+    labels_doc = admins.document(admin).collection("labels")
     try:
         if request.method == "PUT":
             # create or replace - PUT
             labels_doc.document(label).set(data)
         else:
             # update - POST
-            doc_ref = users.document(label).get()
+            doc_ref = admins.document(label).get()
             if doc_ref.exists:
                 current_blob_paths = doc_ref.get("blob_paths")
                 combined_blob_paths = list(set(current_blob_paths).union(set(blob_paths)))
@@ -64,7 +64,7 @@ def score():
     if not (blob_path and label and admin):
         return jsonify(status=400, message="Missing admin, blob_path, or label in request body.")
 
-    labels_doc = users.document(admin).collection("labels")
+    labels_doc = admins.document(admin).collection("labels")
     label_doc_ref = labels_doc.document(label).get()
     if not label_doc_ref.exists:
         return jsonify(
