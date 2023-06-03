@@ -59,17 +59,19 @@ def add_blob_paths_to_label():
 def score():
     blob_path = request.args.get("blob_path")
     label = request.args.get("label")
+    admin = request.args.get("admin")
 
-    if not blob_path or not label:
-        return jsonify(status=400, message="Missing url or label in request body.")
+    if not (blob_path and label and admin):
+        return jsonify(status=400, message="Missing admin, blob_path, or label in request body.")
 
-    doc_ref = users.document(label).get()
-    if not doc_ref.exists:
+    labels_doc = users.document(admin).collection("labels")
+    label_doc_ref = labels_doc.document(label).get()
+    if not label_doc_ref.exists:
         return jsonify(
             status=404, message='There are no labels "{}" in our records.'.format(label)
         )
 
-    label_blob_paths = doc_ref.get("blob_paths")
+    label_blob_paths = label_doc_ref.get("blob_paths")
     score = 0
     for label_url in label_blob_paths:
         new_score = process_and_score(blob_path, label_url)
