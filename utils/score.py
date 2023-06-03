@@ -65,5 +65,4 @@ def get_dot_score(embs1, embs2):
     # Score
     similarity_score = torch.dot(X, Y) / ((torch.dot(X, X) * torch.dot(Y, Y)) ** 0.5)
     similarity_score = (similarity_score + 1) / 2
-    print(similarity_score)
     return similarity_score

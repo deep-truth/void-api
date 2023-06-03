@@ -75,7 +75,6 @@ def score():
     score = 0
     for label_url in label_blob_paths:
         new_score = process_and_score(blob_path, label_url)
-        print(f"new score {new_score}")
         score += new_score
 
     score = score / len(label_blob_paths)
