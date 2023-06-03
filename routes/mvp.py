@@ -17,6 +17,10 @@ users = db.collection("users")
 # POST /mvp/label/add -- Update existing labels
 @mvp.route("/label/add", methods=["PUT", "POST"])
 def add_blob_paths_to_label():
+    """Add list of blob urls to a label (name of the speaker in the blob audio files) created by an admin
+
+    Always have `admin` (str), `label` (str), and `blob_paths` (List[str]) in your request.
+    """
     blob_paths = request.json.get("blob_paths")
     label = request.json.get("label")
     admin = request.json.get("admin")
