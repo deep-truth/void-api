@@ -13,9 +13,25 @@ db = init_firebase()
 
 admins = db.collection("admins")
 
-# PUT /mvp/label/add -- Add new label or replace existing 
-# POST /mvp/label/add -- Update existing labels
-@mvp.route("/label/add", methods=["PUT", "POST"])
+# GET /mv
+@mvp.route("/labels", methods=["GET"])
+def get_labels():
+    admin = request.args.get("admin")
+
+    if not admin:
+        return jsonify(status=400, message="Missing `admin` in request.")
+    labels = []
+    doc_ref = admins.document(admin).collection("labels").get()
+
+    for label in doc_ref:
+        labels.append(label.id)
+
+    return jsonify(status=200, data=labels, message="Retrieved data successfully!")
+    
+
+# PUT /mvp/labels -- Add new label or replace existing 
+# POST /mvp/labels -- Update existing labels
+@mvp.route("/labels", methods=["PUT", "POST"])
 def add_blob_paths_to_label():
     """Add list of blob urls to a label (name of the speaker in the blob audio files) created by an admin
 
