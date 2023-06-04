@@ -28,7 +28,7 @@ def process_and_score(blob_path1, blob_path2):
     _download_blob(blob_path1, AUDIO1)
     _download_blob(blob_path2, AUDIO2)
 
-    score = get_score(AUDIO1, AUDIO2)
+    score = get_score(AUDIO1, AUDIO2, use_dot_score=False)
     os.remove(AUDIO1)
     os.remove(AUDIO2)
     os.removedirs("tmp")
@@ -59,6 +59,8 @@ def get_cos_score(embs1, embs2):
 
 
 def get_dot_score(embs1, embs2):
+    embs1 = embs1.squeeze(0)
+    embs2 = embs2.squeeze(0)
     X = embs1 / torch.linalg.norm(embs1)
     Y = embs2 / torch.linalg.norm(embs2)
 
