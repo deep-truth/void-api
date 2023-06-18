@@ -13,7 +13,7 @@ db = init_firebase()
 
 admins = db.collection("admins")
 
-# GET /mv
+# GET /mvp/labels
 @mvp.route("/labels", methods=["GET"])
 def get_labels():
     admin = request.args.get("admin")
